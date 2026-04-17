@@ -2,7 +2,6 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lineare Algebra - VekShot V6</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,223 +21,979 @@
             font-family: Arial, sans-serif; 
             background-color: var(--bg-color); 
             color: var(--text-color); 
-            margin: 0; 
-            padding: 10px 20px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
+            margin: 0; padding: 15px 20px;
+            display: flex; flex-direction: column; align-items: center;
             transition: background-color 0.4s ease, color 0.4s ease;
-            box-sizing: border-box; 
-            min-height: 100vh;
-            overflow-x: hidden;
+            box-sizing: border-box; height: 100vh; overflow: hidden;
         }
 
         /* --- HEADER --- */
         .header-container { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
-        .sub-title { font-size: 14px; color: rgba(255, 255, 255, 0.5); letter-spacing: 3px; margin-bottom: -5px; text-transform: uppercase; font-weight: bold; }
-        .main-title { font-size: 42px; font-family: "Pixelify Sans", sans-serif; font-weight: 700; color: white; text-shadow: 4px 4px 0px rgba(0,0,0,0.5); margin: 0; letter-spacing: 2px; }
+        .sub-title { font-size: 18px; color: rgba(255, 255, 255, 0.5); letter-spacing: 3px; margin-bottom: -5px; text-transform: uppercase; font-weight: bold; }
+        .main-title { font-size: 56px; font-family: "Pixelify Sans", sans-serif; font-weight: 700; color: white; text-shadow: 4px 4px 0px rgba(0,0,0,0.5); margin: 0; letter-spacing: 2px; }
 
-        /* --- LAYOUT: 3 Spalten --- */
+        /* --- LAYOUT: 3 Spalten (DYNAMISCH SKALIERBAR) --- */
         .app-container { 
-            display: flex; 
-            gap: 20px; 
-            align-items: flex-start;
-            justify-content: center; 
-            width: 100%; 
-            max-width: 1400px; 
-            flex: 1;
-            margin-bottom: 10px;
+            display: flex; gap: 20px; align-items: flex-start; justify-content: center; 
+            width: 100%; max-width: 1600px; /* Erhöht für große Monitore */
+            height: calc(100vh - 100px); min-height: 400px;
         }
-
+        
         .sidebar-left, .sidebar-right { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            width: 180px; 
-            flex-shrink: 0; 
+            display: flex; flex-direction: column; gap: 12px; width: 170px; flex-shrink: 0; 
+            height: 100%; overflow-y: auto; padding-right: 5px; 
+        }
+        
+        .center-column { 
+            display: flex; flex-direction: column; gap: 12px; flex-grow: 1; 
+            height: 100%; min-width: 0; min-height: 0; /* Wichtig für responsives Shrinking! */
         }
 
-        .center-column { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            flex: 1;
-            min-width: 600px;
-        }
+        /* Scrollbars für Sidebars */
+        .sidebar-left::-webkit-scrollbar, .sidebar-right::-webkit-scrollbar { width: 5px; }
+        .sidebar-left::-webkit-scrollbar-thumb, .sidebar-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
 
         /* --- BUTTONS --- */
-        button { font-size: 13px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: all 0.2s; color: white; box-sizing: border-box; }
+        button { font-size: 13px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: filter 0.2s, background-color 0.4s; color: white; box-sizing: border-box; }
         
         .main-mode-btn {
             background-color: var(--ui-color);
-            width: 100%; min-height: 60px; 
+            width: 100%; min-height: 65px; 
             padding: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; line-height: 1.2; border-left: 6px solid transparent;
+            text-align: center; line-height: 1.2; border-left: 6px solid transparent; flex-shrink: 0;
         }
         .main-mode-btn small { font-size: 10px; margin-top: 4px; opacity: 0.8; font-weight: normal; }
-        .main-mode-btn.active { background-color: var(--accent-color); border-left-color: white; transform: translateX(5px); }
+        .main-mode-btn.active { background-color: var(--accent-color); border-left-color: white; filter: brightness(1.1); }
+        .main-mode-btn:hover { filter: brightness(1.2); }
 
         .sub-mode-btn { background-color: var(--ui-color); padding: 15px 10px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border-left: 6px solid transparent; }
         .sub-mode-btn.active { background-color: var(--accent-color); border-left-color: white; }
+        .sub-mode-btn:hover { filter: brightness(1.2); }
 
-        /* --- CANVAS & CONTROLS --- */
+        /* --- CANVAS & CONTROLS (RESPONSIVE FIX) --- */
         .canvas-container { 
-            position: relative; 
-            width: 100%;
-            background-color: #ecf0f1;
-            border: 3px solid var(--ui-color); 
-            border-radius: 5px; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.4);
-            overflow: hidden;
-            aspect-ratio: 900 / 550; /* Verhindert das Quetschen */
+            position: relative; flex-grow: 1; min-height: 0; 
+            display: flex; align-items: center; justify-content: center; width: 100%; 
         }
-
+        .canvas-aspect-wrapper {
+            position: relative; max-width: 100%; max-height: 100%; 
+            aspect-ratio: 90 / 55; height: 100%; /* Sichert die 900x550 Proportionen! */
+        }
         canvas { 
-            width: 100% !important; 
-            height: 100% !important; 
-            display: block; 
+            background-color: #ecf0f1; border: 3px solid var(--ui-color); border-radius: 5px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.6); transition: border-color 0.4s ease; 
+            width: 100%; height: 100%; display: block; box-sizing: border-box;
         }
 
         #timelineContainer {
-            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85); padding: 15px;
-            display: flex; align-items: center; gap: 15px; z-index: 10;
+            position: absolute; bottom: 3px; left: 3px; right: 3px; background: rgba(0,0,0,0.85); padding: 15px;
+            display: flex; align-items: center; gap: 15px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; box-sizing: border-box; z-index: 10;
         }
         #timeSlider { flex-grow: 1; cursor: pointer; height: 8px; accent-color: #e74c3c;}
 
         .bottom-controls { 
-            background-color: var(--ui-color); 
-            padding: 15px 25px; 
-            border-radius: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            flex-shrink: 0; 
+            background-color: var(--ui-color); padding: 15px 25px; border-radius: 8px; 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background-color 0.4s ease; flex-shrink: 0; 
         }
-
         .input-group { display: flex; gap: 10px; align-items: center; }
-        input[type="number"] { width: 60px; padding: 8px; font-size: 16px; font-weight: bold; border: 2px solid var(--accent-color); background-color: rgba(255,255,255,0.1); color: var(--text-color); border-radius: 4px; text-align: center; }
+        input[type="number"] { width: 55px; padding: 8px; font-size: 16px; font-weight: bold; border: 2px solid var(--accent-color); background-color: rgba(255,255,255,0.1); color: var(--text-color); border-radius: 4px; text-align: center; transition: border-color 0.4s; }
+        .checkbox-group { display: flex; gap: 15px; align-items: center; font-size: 14px; font-weight: bold; }
         
-        .action-btn { background-color: var(--accent-color); padding: 12px 30px; font-size: 20px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .action-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+        .action-btn { background-color: var(--accent-color); padding: 12px 25px; font-size: 20px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background-color 0.4s ease;}
+        .action-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
+        #resetBtn { background-color: #7f8c8d; padding: 12px 15px; }
 
-        /* --- HIGHSCORE & MATHE PANEL --- */
-        .highscore-panel, #mathPanel { 
-            background-color: var(--ui-color); 
-            padding: 12px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
-            width: 100%; 
-        }
-        #mathPanel { background-color: rgba(255, 255, 255, 0.95); color: #2c3e50; display: none; flex-direction: column; font-family: monospace; }
-        
-        .hs-section { margin-bottom: 8px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 4px; }
-        .hs-entry { font-size: 11px; display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 2px;}
+        /* --- HIGHSCORE PANEL --- */
+        .highscore-panel { background-color: var(--ui-color); padding: 12px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); box-sizing: border-box; width: 100%; transition: background-color 0.4s ease; }
+        .highscore-panel h3 { margin: 0 0 10px 0; font-size: 13px; text-align: center; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1px;}
+        .hs-section { margin-bottom: 10px; background: rgba(0,0,0,0.15); padding: 6px; border-radius: 4px; }
+        .hs-section h4 { margin: 0 0 6px 0; font-size: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; color: #ecf0f1;}
+        .hs-entry { font-size: 11px; margin-bottom: 3px; display: flex; justify-content: space-between; font-weight: bold;}
 
-        #status { font-size: 18px; font-weight: bold; text-align: center; margin-top: 5px; min-height: 24px;}
+        /* --- MATHE PANEL --- */
+        #mathPanel { background-color: rgba(255, 255, 255, 0.95); color: #2c3e50; padding: 10px 15px; border-radius: 5px; border: 2px solid #383E42; display: none; flex-direction: column; font-family: "Courier New", Courier, monospace; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; overflow-y: auto;}
+        #mathPanel h3 { margin: 0 0 10px 0; font-size: 14px; border-bottom: 2px solid #ccc; padding-bottom: 5px;}
+        .math-block { background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 4px solid var(--accent-color); font-size: 11px; line-height: 1.4; font-weight: bold; margin-bottom: 8px;}
+        .vector { display: inline-block; vertical-align: middle; text-align: center; background: #fff; border-left: 1px solid #000; border-right: 1px solid #000; padding: 1px 4px; border-radius: 2px; margin: 0 2px;}
+
+        #status { font-size: 15px; font-weight: bold; text-align: center; height: 20px; margin-top: 5px;}
         .hidden { display: none !important; }
         .disabled-ui { opacity: 0.4; pointer-events: none; }
         
-        .trademark-footer { position: fixed; bottom: 5px; right: 10px; color: rgba(255,255,255,0.05); font-size: 10px; pointer-events: none; }
+        /* TRADEMARK FOOTER (95% transparent = 0.05 opacity) */
+        .trademark-footer {
+            position: fixed; bottom: 10px; right: 15px; 
+            color: rgba(255,255,255,0.05); font-size: 12px; font-weight: bold; 
+            pointer-events: none; z-index: 1000;
+        }
     </style>
 </head>
 <body>
 
     <div class="header-container">
-        <div class="sub-title">Lernsoftware</div>
-        <h1 class="main-title">VEKSHOT V6</h1>
+        <div class="sub-title">Lineare Algebra</div>
+        <div class="main-title">VekShot V6</div>
     </div>
+    
+    <div class="app-container">
+        
+        <aside class="sidebar-left">
+            <button class="main-mode-btn" id="btnClassic">CLASSIC<br><small>Freies Spiel</small></button>
+            <button class="main-mode-btn" id="btnMathe">MATHE<br><small>Formel Check</small></button>
+            <button class="main-mode-btn" id="btnChallenge">CHALLENGE<br><small>10 Stages</small></button>
+            <button class="main-mode-btn" id="btnDeathrun">DEATHRUN<br><small>1 Schuss, 1 Hit</small></button>
+            <button class="main-mode-btn" id="btnScharfschuetze">SCHARF-<br>SCHÜTZE<br><small>Wird kleiner</small></button>
+            <button class="main-mode-btn" id="btnWurmloch">WURMLOCH<br><small>Teleportation</small></button>
+            <button class="main-mode-btn" id="btnBounce">BOUNCE<br><small>Hindernisse</small></button>
+            <button class="main-mode-btn" id="btnChaos">CHAOS<br><small>Alles auf einmal</small></button>
+        </aside>
 
-    <div class="app-container" id="mainApp">
-        <div class="sidebar-left">
-            <button class="main-mode-btn active" onclick="setMainMode('vektor')">
-                VEKTOR-SHOOTER
-                <small>Grundlagen & Addition</small>
-            </button>
-            <button class="main-mode-btn" onclick="setMainMode('skalar')">
-                SKALAR-TRANSFORM
-                <small>Multiplikation & Skalierung</small>
-            </button>
-            <button class="main-mode-btn" onclick="setMainMode('mathe')">
-                MATHE-CHALLENGE
-                <small>Wurzeln & Potenzen</small>
-            </button>
-        </div>
+        <main class="center-column">
+            <div class="canvas-container">
+                <div class="canvas-aspect-wrapper">
+                    <canvas id="gameCanvas" width="900" height="550"></canvas>
+                    
+                    <div id="timelineContainer" class="hidden">
+                        <span id="timeCurrent" style="color: #2ecc71; font-weight: bold; font-family: monospace; width: 45px;">0.0s</span>
+                        <input type="range" id="timeSlider" min="0" value="0" step="1">
+                        <span id="timeMax" style="color: white; font-weight: bold; font-family: monospace; width: 45px;">1.0s</span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="center-column">
-            <div class="canvas-container" id="bb_canvas_box">
-                <canvas id="bb_gameCanvas"></canvas>
+            <div class="bottom-controls">
+                <div class="input-group">
+                    <label><strong>X:</strong></label> <input type="number" id="vecX" value="40" step="5" min="0" max="100">
+                    <label><strong>Y:</strong></label> <input type="number" id="vecY" value="60" step="5" min="0" max="100">
+                </div>
                 
-                <div id="timelineContainer" class="hidden">
-                    <span style="font-size:12px; font-weight:bold; min-width:40px;">ZEIT:</span>
-                    <input type="range" id="timeSlider" min="0" max="100" value="0">
-                    <button id="closeTimeline" style="background:#444; padding:5px 10px;">X</button>
+                <div class="checkbox-group" id="togglesDiv">
+                    <label><input type="checkbox" id="windToggle"> Wind an</label>
+                    <label><input type="checkbox" id="bounceToggle"> Abpraller an</label>
                 </div>
+
+                <button class="action-btn" id="fireBtn">SCHUSS!</button>
+                <button id="resetBtn">Reset</button>
             </div>
+            <div id="status"></div>
+        </main>
 
-            <div id="status">Bereit zum Start!</div>
+        <aside class="sidebar-right">
+            <button class="sub-mode-btn" id="btnSubTank">Panzer-Modus</button>
+            <button class="sub-mode-btn" id="btnSubBB">Basketball-Modus</button>
+            <button class="sub-mode-btn hidden" id="btnSubMix">Mix-Modus</button>
 
-            <div class="bottom-controls" id="controlPanel">
-                <div class="input-group" id="inputVektor">
-                    <div>
-                        <label style="display:block; font-size:10px; opacity:0.7;">X-WERT</label>
-                        <input type="number" id="targetX" value="3" step="1">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:10px; opacity:0.7;">Y-WERT</label>
-                        <input type="number" id="targetY" value="2" step="1">
-                    </div>
-                </div>
-
-                <div class="input-group hidden" id="inputSkalar">
-                    <div>
-                        <label style="display:block; font-size:10px; opacity:0.7;">FAKTOR (s)</label>
-                        <input type="number" id="skalarFactor" value="2" step="0.5">
-                    </div>
-                </div>
-
-                <div class="input-group hidden" id="inputMathe">
-                    <div>
-                        <label style="display:block; font-size:10px; opacity:0.7;">ERGEBNIS</label>
-                        <input type="number" id="mathAnswer" placeholder="?">
-                    </div>
-                </div>
-
-                <button class="action-btn" id="fireBtn" onclick="fire()">FEUERN!</button>
-            </div>
-        </div>
-
-        <div class="sidebar-right">
-            <div class="highscore-panel">
-                <div style="text-align:center; border-bottom:1px solid rgba(255,255,255,0.2); margin-bottom:10px; padding-bottom:5px; font-size:14px;">BESTLEISTUNGEN</div>
+            <div class="highscore-panel" id="highscorePanel">
+                <h3>HIGHSCORES</h3>
+                
                 <div class="hs-section">
-                    <div style="font-size:9px; color:var(--accent-color); margin-bottom:3px;">VEKTOR-SHOOTER</div>
-                    <div class="hs-entry"><span>LEVEL:</span> <span id="hs-vektor-lvl">1</span></div>
-                    <div class="hs-entry"><span>TREFFER:</span> <span id="hs-vektor-hits">0</span></div>
+                    <h4>CHALLENGE</h4>
+                    <div class="hs-entry"><span>Panz:</span> <span id="hsChalTank">0</span></div>
+                    <div class="hs-entry"><span>Bask:</span> <span id="hsChalBB">0</span></div>
+                    <div class="hs-entry"><span>Mix:</span> <span id="hsChalMix">0</span></div>
                 </div>
+                
                 <div class="hs-section">
-                    <div style="font-size:9px; color:var(--accent-color); margin-bottom:3px;">SKALAR-TRANSF.</div>
-                    <div class="hs-entry"><span>LEVEL:</span> <span id="hs-skalar-lvl">1</span></div>
-                    <div class="hs-entry"><span>TREFFER:</span> <span id="hs-skalar-hits">0</span></div>
+                    <h4>DEATHRUN</h4>
+                    <div class="hs-entry"><span>Panz:</span> <span id="hsDrTank">0</span></div>
+                    <div class="hs-entry"><span>Bask:</span> <span id="hsDrBB">0</span></div>
+                    <div class="hs-entry"><span>Mix:</span> <span id="hsDrMix">0</span></div>
+                </div>
+
+                <div class="hs-section">
+                    <h4>SCHARFSCHÜTZE</h4>
+                    <div class="hs-entry"><span>Panz:</span> <span id="hsSnTank">0</span></div>
+                    <div class="hs-entry"><span>Bask:</span> <span id="hsSnBB">0</span></div>
+                    <div class="hs-entry"><span>Mix:</span> <span id="hsSnMix">0</span></div>
+                </div>
+
+                <div class="hs-section" id="chaosHsSection">
+                    <h4>CHAOS</h4>
+                    <div class="hs-entry"><span>Panz:</span> <span id="hsChTank">0</span></div>
+                    <div class="hs-entry"><span>Bask:</span> <span id="hsChBB">0</span></div>
+                    <div class="hs-entry"><span>Mix:</span> <span id="hsChMix">0</span></div>
                 </div>
             </div>
 
             <div id="mathPanel">
-                <div style="font-weight:bold; margin-bottom:10px; text-align:center; color:#e74c3c;">AUFGABE</div>
-                <div id="mathTask" style="font-size:20px; text-align:center; margin-bottom:10px;"></div>
-                <div style="font-size:10px; color:#7f8c8d; text-align:center;">Tipp: Berechne den Wert im Kopf oder auf Papier!</div>
+                <h3 id="mathTitle">Berechnungen</h3>
+                <div id="mathStatic">
+                    <p style="font-size: 13px;">Schieße, um die Physik-Berechnungen zu sehen.</p>
+                </div>
+                <div id="mathLive"></div>
             </div>
-
-            <button class="sub-mode-btn" style="margin-top:auto;" onclick="resetGame()">SPIEL NEUSTARTEN</button>
-        </div>
+        </aside>
+        
     </div>
 
-    <div class="trademark-footer">BJOERN BACH SYSTEMS © 2024</div>
+    <div class="trademark-footer">developed by B.Bach</div>
 
-    <script>
-        // Dein gesamter Script-Teil ab hier...
-        // [Hier den restlichen JavaScript-Code einfügen, den du bereits hattest]
-    </script>
+<script>
+// Code developed by Bjoern Bach
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // --- VARIABLES WITH TRADEMARKS ---
+    const canvas_bb = document.getElementById("gameCanvas");
+    const ctx_Bach = canvas_bb.getContext("2d");
+    
+    // Logische Größe bleibt 900x550 für Physik - CSS übernimmt die Skalierung!
+    canvas_bb.width = 900; canvas_bb.height = 550;
+    const scale_bb = 4; const originX_Bach = 40; const originY_Bach = 510;    
+    function cX(x) { return originX_Bach + x * scale_bb; }
+    function cY(y) { return originY_Bach - y * scale_bb; }
+
+    const themes_bb = {
+        classic_tank: { bg: "#2c3e50", ui: "#34495e", accent: "#e74c3c", text: "#fff", tankDark: "#4B5320", tankLight: "#556B2F", track: "#36454F" },
+        classic_basketball: { bg: "#2A080C", ui: "#8D363F", accent: "#58181F", text: "#fff" },
+        mathe_tank: { bg: "#1F2224", ui: "#383E42", accent: "#4E575C", text: "#fff", tankDark: "#151718", tankLight: "#2B3033", track: "#000" }, 
+        mathe_basketball: { bg: "#A39F8A", ui: "#B8B5A1", accent: "#8F8B73", text: "#222" }, 
+        challenge_tank: { bg: "#005522", ui: "#008736", accent: "#00B247", text: "#fff", tankDark: "#00401A", tankLight: "#006B2B", track: "#001A0A" }, 
+        challenge_basketball: { bg: "#993D00", ui: "#CC5200", accent: "#FF6600", text: "#fff" }, 
+        challenge_mix: { bg: "#8B2252", ui: "#BC4077", accent: "#D44A88", text: "#fff", tankDark: "#5E1737", tankLight: "#8B2252", track: "#3D0E23" },
+        deathrun_tank: { bg: "#2E1114", ui: "#4A1B20", accent: "#8B1A25", text: "#fff", tankDark: "#1A0A0C", tankLight: "#2E1114", track: "#000" },
+        deathrun_basketball: { bg: "#4A1C00", ui: "#662600", accent: "#993900", text: "#fff" }, 
+        deathrun_mix: { bg: "#2E004F", ui: "#47007A", accent: "#7000BD", text: "#fff", tankDark: "#1D0033", tankLight: "#2E004F", track: "#0F001A" },
+        scharfschuetze_tank: { bg: "#1D2B36", ui: "#263947", accent: "#3B596E", text: "#fff", tankDark: "#10181E", tankLight: "#1D2B36", track: "#080C0F" },
+        scharfschuetze_basketball: { bg: "#2A3B32", ui: "#3A4F44", accent: "#527061", text: "#fff" },
+        scharfschuetze_mix: { bg: "#1E2C2B", ui: "#293D3A", accent: "#3A5752", text: "#fff", tankDark: "#111818", tankLight: "#1E2C2B", track: "#090C0C" },
+        wurmloch_tank: { bg: "#1A0B2E", ui: "#2D124B", accent: "#7B2CBF", text: "#fff", tankDark: "#110722", tankLight: "#1A0B2E", track: "#000" },
+        wurmloch_basketball: { bg: "#2B0B3A", ui: "#4A1266", accent: "#9D2BCC", text: "#fff" },
+        bounce_tank: { bg: "#04293A", ui: "#084661", accent: "#12B886", text: "#fff", tankDark: "#021620", tankLight: "#04293A", track: "#000" },
+        bounce_basketball: { bg: "#063A29", ui: "#0A6146", accent: "#12B852", text: "#fff" },
+        chaos_tank: { bg: "#36000B", ui: "#5E0013", accent: "#C70028", text: "#fff", tankDark: "#1F0006", tankLight: "#36000B", track: "#000" },
+        chaos_basketball: { bg: "#4A000A", ui: "#7A0011", accent: "#E60021", text: "#fff" },
+        chaos_mix: { bg: "#1C002B", ui: "#33004F", accent: "#6D00A3", text: "#fff", tankDark: "#0E0016", tankLight: "#1C002B", track: "#000" }
+    };
+
+    let bb_mainMode = 'classic'; 
+    let bb_subMode = 'tank'; 
+    let bb_activeVisualMode = 'tank'; 
+    
+    let bb_stage = 1;
+    let bb_score = 0; 
+    let bb_shotsLeft = 3;
+    let bb_targetActive = true;
+    let bb_isGameOver = false;
+    let animationId_Bach;
+    let bb_bounceCount = 0;
+    let bb_portalBonus = 0; 
+    
+    let mathShotDone_Bach = false; 
+    let trajectoryHistory_bb = []; 
+    let isScrubbing_Bach = false; 
+    let scrubIndex_bb = 0;
+
+    let originObj_Bach = { x: 0, y: 0 }; 
+    let target_Bach = { x: 100, y: 50, radius: 5 }; 
+    let bb_projectile = null;
+    let windVector_Bach = { x: 0, y: 0 };
+    
+    let bb_portals = [];
+    let bb_obstacles = [];
+    
+    let bb_hs = { chalTank: 0, chalBB: 0, chalMix: 0, drTank: 0, drBB: 0, drMix: 0, snTank: 0, snBB: 0, snMix: 0, chTank: 0, chBB: 0, chMix: 0 };
+
+    try {
+        bb_hs.chalTank = parseInt(localStorage.getItem('bb_v6_hs_chal_tank')) || 0; 
+        bb_hs.chalBB = parseInt(localStorage.getItem('bb_v6_hs_chal_bb')) || 0; 
+        bb_hs.chalMix = parseInt(localStorage.getItem('bb_v6_hs_chal_mix')) || 0;
+        
+        bb_hs.drTank = parseInt(localStorage.getItem('bb_v6_hs_dr_tank')) || 0; 
+        bb_hs.drBB = parseInt(localStorage.getItem('bb_v6_hs_dr_bb')) || 0; 
+        bb_hs.drMix = parseInt(localStorage.getItem('bb_v6_hs_dr_mix')) || 0;
+        
+        bb_hs.snTank = parseInt(localStorage.getItem('bb_v6_hs_sn_tank')) || 0; 
+        bb_hs.snBB = parseInt(localStorage.getItem('bb_v6_hs_sn_bb')) || 0; 
+        bb_hs.snMix = parseInt(localStorage.getItem('bb_v6_hs_sn_mix')) || 0;
+        
+        bb_hs.chTank = parseInt(localStorage.getItem('bb_v6_hs_ch_tank')) || 0; 
+        bb_hs.chBB = parseInt(localStorage.getItem('bb_v6_hs_ch_bb')) || 0; 
+        bb_hs.chMix = parseInt(localStorage.getItem('bb_v6_hs_ch_mix')) || 0;
+    } catch(e) { console.warn("Highscore-Laden fehlgeschlagen."); }
+    
+    function updateHighscoreUI_Bach() {
+        document.getElementById('hsChalTank').innerText = bb_hs.chalTank; document.getElementById('hsChalBB').innerText = bb_hs.chalBB; document.getElementById('hsChalMix').innerText = bb_hs.chalMix;
+        document.getElementById('hsDrTank').innerText = bb_hs.drTank; document.getElementById('hsDrBB').innerText = bb_hs.drBB; document.getElementById('hsDrMix').innerText = bb_hs.drMix;
+        document.getElementById('hsSnTank').innerText = bb_hs.snTank; document.getElementById('hsSnBB').innerText = bb_hs.snBB; document.getElementById('hsSnMix').innerText = bb_hs.snMix;
+        document.getElementById('hsChTank').innerText = bb_hs.chTank; document.getElementById('hsChBB').innerText = bb_hs.chBB; document.getElementById('hsChMix').innerText = bb_hs.chMix;
+    }
+    updateHighscoreUI_Bach();
+
+    const modeIds = ['btnClassic', 'btnMathe', 'btnChallenge', 'btnDeathrun', 'btnScharfschuetze', 'btnWurmloch', 'btnBounce', 'btnChaos'];
+    modeIds.forEach(id => {
+        let btn = document.getElementById(id);
+        if(btn) btn.addEventListener('click', (e) => setMainMode_bb(id.replace('btn', '').toLowerCase()));
+    });
+    
+    document.getElementById('btnSubTank').addEventListener('click', () => setSubMode_Bach('tank'));
+    document.getElementById('btnSubBB').addEventListener('click', () => setSubMode_Bach('basketball'));
+    document.getElementById('btnSubMix').addEventListener('click', () => setSubMode_Bach('mix'));
+
+    document.getElementById("fireBtn").addEventListener("click", fire_bb);
+    document.getElementById("resetBtn").addEventListener("click", fullReset_bb);
+    document.getElementById("vecX").addEventListener("input", checkInputLimits_bb);
+    document.getElementById("vecY").addEventListener("input", checkInputLimits_bb);
+    document.getElementById("windToggle").addEventListener("change", () => draw_bb());
+    document.getElementById("bounceToggle").addEventListener("change", () => draw_bb());
+
+    document.addEventListener("keydown", (e) => {
+        let isFocused = (document.activeElement === document.getElementById("vecX") || document.activeElement === document.getElementById("vecY"));
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"].includes(e.key)) {
+            if (e.key === "Enter") { e.preventDefault(); if(!isScrubbing_Bach) fire_bb(); return; }
+            if (!isFocused && !isScrubbing_Bach) {
+                e.preventDefault(); 
+                let cX = parseFloat(document.getElementById("vecX").value) || 0;
+                let cY = parseFloat(document.getElementById("vecY").value) || 0;
+                if (e.key === "ArrowUp") cY = Math.min(100, cY + 5);
+                if (e.key === "ArrowDown") cY = Math.max(0, cY - 5);
+                if (e.key === "ArrowRight") cX = Math.min(100, cX + 5);
+                if (e.key === "ArrowLeft") cX = Math.max(0, cX - 5);
+                document.getElementById("vecX").value = cX;
+                document.getElementById("vecY").value = cY;
+                checkInputLimits_bb();
+            }
+        }
+    });
+
+    const timeSlider = document.getElementById("timeSlider");
+    timeSlider.addEventListener("input", () => {
+        scrubIndex_bb = parseInt(timeSlider.value);
+        let state = trajectoryHistory_bb[scrubIndex_bb];
+        if(state) {
+            document.getElementById("timeCurrent").innerText = state.t.toFixed(1) + "s";
+            updateLiveMath_Bach(state);
+            draw_bb(true);
+        }
+    });
+
+    function setMainMode_bb(mode) {
+        bb_mainMode = mode;
+        document.querySelectorAll('.main-mode-btn').forEach(b => b.classList.remove('active'));
+        let btnId = 'btn' + mode.charAt(0).toUpperCase() + mode.slice(1);
+        let targetBtn = document.getElementById(btnId);
+        if(targetBtn) targetBtn.classList.add('active');
+        
+        let mixBtn = document.getElementById('btnSubMix');
+        let togglesDiv = document.getElementById('togglesDiv');
+        let mathPanel = document.getElementById('mathPanel');
+        let hsPanel = document.getElementById('highscorePanel');
+        
+        document.getElementById('timelineContainer').classList.add('hidden');
+        isScrubbing_Bach = false;
+        
+        if(['challenge', 'deathrun', 'scharfschuetze', 'chaos'].includes(mode)) {
+            mixBtn.classList.remove('hidden');
+            togglesDiv.classList.add('disabled-ui');
+            document.getElementById("windToggle").checked = true;
+            document.getElementById("bounceToggle").checked = true;
+        } else {
+            if(bb_subMode === 'mix') { bb_subMode = 'tank'; updateSubModeUI(); }
+            mixBtn.classList.add('hidden');
+            togglesDiv.classList.remove('disabled-ui');
+        }
+
+        if(mode === 'mathe') {
+            hsPanel.style.display = 'none'; 
+            mathPanel.style.display = 'flex';
+        } else {
+            hsPanel.style.display = 'block'; 
+            mathPanel.style.display = 'none';
+        }
+
+        applyTheme_bb(); fullReset_bb();
+    }
+
+    function setSubMode_Bach(mode) {
+        bb_subMode = mode; updateSubModeUI(); applyTheme_bb(); fullReset_bb();
+    }
+
+    function updateSubModeUI() {
+        document.querySelectorAll('.sub-mode-btn').forEach(b => b.classList.remove('active'));
+        let btnId = bb_subMode === 'tank' ? 'btnSubTank' : (bb_subMode === 'basketball' ? 'btnSubBB' : 'btnSubMix');
+        let targetBtn = document.getElementById(btnId);
+        if(targetBtn) targetBtn.classList.add('active');
+    }
+
+    function applyTheme_bb() {
+        if (['challenge', 'deathrun', 'scharfschuetze', 'chaos'].includes(bb_mainMode) && bb_subMode === 'mix') {
+            bb_activeVisualMode = (bb_stage % 2 !== 0) ? 'tank' : 'basketball';
+        } else {
+            bb_activeVisualMode = bb_subMode;
+        }
+
+        let key = bb_mainMode + '_' + bb_subMode;
+        let theme = themes_bb[key] || themes_bb['classic_tank']; 
+        
+        document.documentElement.style.setProperty('--bg-color', theme.bg);
+        document.documentElement.style.setProperty('--ui-color', theme.ui);
+        document.documentElement.style.setProperty('--text-color', theme.text);
+        document.documentElement.style.setProperty('--accent-color', theme.accent);
+    }
+
+    function checkHighscore_bb() {
+        let isNew_Bach = false;
+        try {
+            if(bb_mainMode === 'challenge') {
+                if(bb_subMode === 'tank' && bb_score > bb_hs.chalTank) { bb_hs.chalTank = bb_score; localStorage.setItem('bb_v6_hs_chal_tank', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'basketball' && bb_score > bb_hs.chalBB) { bb_hs.chalBB = bb_score; localStorage.setItem('bb_v6_hs_chal_bb', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'mix' && bb_score > bb_hs.chalMix) { bb_hs.chalMix = bb_score; localStorage.setItem('bb_v6_hs_chal_mix', bb_score); isNew_Bach = true; }
+            } else if(bb_mainMode === 'deathrun') {
+                if(bb_subMode === 'tank' && bb_score > bb_hs.drTank) { bb_hs.drTank = bb_score; localStorage.setItem('bb_v6_hs_dr_tank', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'basketball' && bb_score > bb_hs.drBB) { bb_hs.drBB = bb_score; localStorage.setItem('bb_v6_hs_dr_bb', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'mix' && bb_score > bb_hs.drMix) { bb_hs.drMix = bb_score; localStorage.setItem('bb_v6_hs_dr_mix', bb_score); isNew_Bach = true; }
+            } else if(bb_mainMode === 'scharfschuetze') {
+                if(bb_subMode === 'tank' && bb_score > bb_hs.snTank) { bb_hs.snTank = bb_score; localStorage.setItem('bb_v6_hs_sn_tank', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'basketball' && bb_score > bb_hs.snBB) { bb_hs.snBB = bb_score; localStorage.setItem('bb_v6_hs_sn_bb', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'mix' && bb_score > bb_hs.snMix) { bb_hs.snMix = bb_score; localStorage.setItem('bb_v6_hs_sn_mix', bb_score); isNew_Bach = true; }
+            } else if(bb_mainMode === 'chaos') {
+                if(bb_subMode === 'tank' && bb_score > bb_hs.chTank) { bb_hs.chTank = bb_score; localStorage.setItem('bb_v6_hs_ch_tank', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'basketball' && bb_score > bb_hs.chBB) { bb_hs.chBB = bb_score; localStorage.setItem('bb_v6_hs_ch_bb', bb_score); isNew_Bach = true; }
+                if(bb_subMode === 'mix' && bb_score > bb_hs.chMix) { bb_hs.chMix = bb_score; localStorage.setItem('bb_v6_hs_ch_mix', bb_score); isNew_Bach = true; }
+            }
+        } catch(e) {}
+        updateHighscoreUI_Bach(); return isNew_Bach;
+    }
+
+    function formatN_Bach(n) { return n.toFixed(1).replace('.', ','); }
+
+    function generateV6Objects_bb() {
+        bb_portals = []; bb_obstacles = [];
+        
+        if (bb_mainMode === 'wurmloch' || bb_mainMode === 'chaos') {
+            bb_portals.push({x: 60 + Math.random()*40, y: 20 + Math.random()*50, r: 8});
+            bb_portals.push({x: 130 + Math.random()*60, y: 20 + Math.random()*50, r: 8});
+        }
+        
+        if (bb_mainMode === 'bounce' || bb_mainMode === 'chaos') {
+            let num = 1 + Math.floor(Math.random() * 3); 
+            let lengths = [15, 20, 25, 30, 35];
+            for(let i=0; i<num; i++) {
+                let cx = 60 + Math.random() * 110;
+                let cy = 20 + Math.random() * 60;
+                let angle = Math.random() * Math.PI;
+                let len = lengths[Math.floor(Math.random() * lengths.length)];
+                let dx = Math.cos(angle) * (len/2); let dy = Math.sin(angle) * (len/2);
+                bb_obstacles.push({ x1: cx - dx, y1: cy - dy, x2: cx + dx, y2: cy + dy });
+            }
+        }
+    }
+
+    function fullReset_bb() { 
+        bb_score = 0; bb_stage = 1; bb_isGameOver = false; mathShotDone_Bach = false; isScrubbing_Bach = false;
+        document.getElementById('timelineContainer').classList.add('hidden');
+        if(bb_mainMode === 'mathe') {
+            document.getElementById('mathStatic').innerHTML = '<p style="font-size: 13px;">Schieße, um die Physik-Berechnungen zu sehen.</p>';
+            document.getElementById('mathLive').innerHTML = '';
+        }
+        applyTheme_bb(); nextLevel_Bach(); 
+    }
+
+    function nextLevel_Bach() {
+        if(['challenge', 'chaos'].includes(bb_mainMode) && bb_stage > 10) {
+            bb_isGameOver = true; draw_bb(); return;
+        }
+
+        if(bb_mainMode === 'deathrun') bb_shotsLeft = 1;
+        else if (bb_mainMode === 'mathe') bb_shotsLeft = 999;
+        else bb_shotsLeft = 3;
+
+        bb_targetActive = true; bb_isGameOver = false; mathShotDone_Bach = false; isScrubbing_Bach = false;
+        document.getElementById('timelineContainer').classList.add('hidden');
+        
+        target_Bach.x = 40 + Math.random() * 150; 
+        target_Bach.y = 10 + Math.random() * 90;
+
+        if (bb_mainMode === 'scharfschuetze') target_Bach.radius = Math.max(1.5, 5 - (bb_stage - 1) * 0.4); 
+        else target_Bach.radius = 5;
+
+        windVector_Bach.x = parseFloat((Math.random() * 10 - 5).toFixed(1));
+        
+        if(['challenge', 'deathrun', 'scharfschuetze', 'chaos'].includes(bb_mainMode)) {
+            document.getElementById("windToggle").checked = true;
+            document.getElementById("bounceToggle").checked = true;
+        }
+
+        generateV6Objects_bb();
+
+        applyTheme_bb(); bb_projectile = null; bb_bounceCount = 0; bb_portalBonus = 0; trajectoryHistory_bb = [];
+        
+        draw_bb(); 
+    }
+
+    function checkInputLimits_bb() {
+        let vx = document.getElementById("vecX"); let vy = document.getElementById("vecY");
+        if (vx.value !== "" && parseFloat(vx.value) > 100) vx.value = 100;
+        if (vy.value !== "" && parseFloat(vy.value) > 100) vy.value = 100;
+        if (vx.value !== "" && parseFloat(vx.value) < 0) vx.value = 0;
+        if (vy.value !== "" && parseFloat(vy.value) < 0) vy.value = 0;
+        draw_bb(); 
+    }
+
+    function fire_bb() {
+        if (bb_projectile != null || bb_isGameOver || !bb_targetActive || isScrubbing_Bach) return; 
+        if (bb_mainMode !== 'mathe' && bb_shotsLeft <= 0) return;
+        if (bb_mainMode === 'mathe' && mathShotDone_Bach) return; 
+
+        if (bb_mainMode !== 'mathe') bb_shotsLeft--; 
+        
+        bb_bounceCount = 0; bb_portalBonus = 0; trajectoryHistory_bb = [];
+        document.getElementById("status").innerText = "";
+        
+        let inputX_bb = parseFloat(document.getElementById("vecX").value);
+        let inputY_Bach = parseFloat(document.getElementById("vecY").value);
+        if (isNaN(inputX_bb)) inputX_bb = 0; if (isNaN(inputY_Bach)) inputY_Bach = 0;
+        
+        let projRadius = bb_activeVisualMode === 'tank' ? 1.2 : 2.5; 
+        bb_projectile = { x: originObj_Bach.x, y: originObj_Bach.y, vx: inputX_bb, vy: inputY_Bach, radius: projRadius, trail: [], length: 4, width: 1.5, t:0, tpCool:0 };
+        
+        if(bb_mainMode === 'mathe') {
+            let gravity_Bach = bb_activeVisualMode === 'tank' ? 30 : 15;
+            let wX = document.getElementById("windToggle").checked ? windVector_Bach.x * 6 : 0;
+            document.getElementById('mathTitle').innerText = "Live Analyse (Flug)";
+            document.getElementById('mathStatic').innerHTML = `
+                <div class="math-block"><b>Startvektor v₀:</b><br><div class="vector">${formatN_Bach(inputX_bb)}<br>${formatN_Bach(inputY_Bach)}</div></div>
+                <div class="math-block" style="border-left-color:#3498db;"><b>Gravitation g:</b><br><div class="vector">0<br>-${gravity_Bach}</div></div>
+                <div class="math-block" style="border-left-color:#2ecc71;"><b>Wind w:</b><br><div class="vector">${formatN_Bach(wX)}<br>0</div></div>
+                <div class="math-block" style="border-left-color:#9b59b6;"><b>Res. Kraft a:</b><br>a = g + w = <br><div class="vector">${formatN_Bach(wX)}<br>-${gravity_Bach}</div></div>
+                <div id="bounceLogs"></div>
+            `;
+        }
+
+        if (animationId_Bach) cancelAnimationFrame(animationId_Bach);
+        update_Bach();
+    }
+
+    function updateLiveMath_Bach(state) {
+        if(!state || bb_mainMode !== 'mathe') return;
+        document.getElementById('mathLive').innerHTML = `
+            <div class="math-block" style="border-left-color:#e67e22; margin-top: 10px;">
+                <b>LIVE DATEN (t = ${formatN_Bach(state.t)}s):</b><br>
+                v(t) = <div class="vector">${formatN_Bach(state.vx)}<br>${formatN_Bach(state.vy)}</div><br>
+                p(t) = <div class="vector">${formatN_Bach(state.x)}<br>${formatN_Bach(state.y)}</div>
+            </div>
+        `;
+    }
+
+    function logMathBounce_bb(axis) {
+        if(bb_mainMode !== 'mathe') return;
+        let bLogs = document.getElementById('bounceLogs');
+        if(!bLogs) return;
+        let norm = axis === 'x' ? "<div class='vector'>-1<br>0</div>" : (axis === 'y' ? "<div class='vector'>0<br>-1</div>" : "Hindernis");
+        bLogs.innerHTML += `<div class="math-block" style="border-left-color:#f1c40f; margin-top:5px;"><b>Kollision!</b><br>n = ${norm}</div>`;
+        let panel = document.getElementById('mathPanel');
+        panel.scrollTop = panel.scrollHeight;
+    }
+
+    function getLineIntersection(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
+        let s1x = p1x - p0x, s1y = p1y - p0y;
+        let s2x = p3x - p2x, s2y = p3y - p2y;
+        let denom = -s2x * s1y + s1x * s2y;
+        if (Math.abs(denom) < 0.0001) return null; 
+        
+        let s = (-s1y * (p0x - p2x) + s1x * (p0y - p2y)) / denom;
+        let t = ( s2x * (p0y - p2y) - s2y * (p0x - p2x)) / denom;
+        if (s >= 0 && s <= 1 && t >= 0 && t <= 1) return { x: p0x + (t * s1x), y: p0y + (t * s1y) };
+        return null;
+    }
+
+    function endShot_bb(hit) {
+        if (bb_mainMode === 'mathe') {
+            mathShotDone_Bach = true;
+            let tc = document.getElementById('timelineContainer');
+            tc.classList.remove('hidden');
+            timeSlider.max = trajectoryHistory_bb.length - 1; timeSlider.value = trajectoryHistory_bb.length - 1;
+            scrubIndex_bb = trajectoryHistory_bb.length - 1;
+            document.getElementById("timeMax").innerText = trajectoryHistory_bb[scrubIndex_bb].t.toFixed(1) + "s";
+            isScrubbing_Bach = true;
+            document.getElementById("status").innerText = hit ? "TREFFER! Spule unten zurück." : "DANEBEN! Spule unten zurück.";
+            document.getElementById("status").style.color = hit ? "#2ecc71" : "#e74c3c";
+            draw_bb(true); return;
+        }
+
+        if (hit) {
+            let pE_Bach = (['deathrun', 'scharfschuetze'].includes(bb_mainMode)) ? 1 : 0;
+            if(pE_Bach === 0) {
+                let hW = document.getElementById("windToggle").checked;
+                if (hW) { if (bb_shotsLeft === 2) pE_Bach = 10; else if (bb_shotsLeft === 1) pE_Bach = 5; else pE_Bach = 2; }
+                else { if (bb_shotsLeft === 2) pE_Bach = 5; else if (bb_shotsLeft === 1) pE_Bach = 3; else pE_Bach = 1; }
+                
+                pE_Bach += bb_portalBonus;
+                if (bb_bounceCount > 0) pE_Bach *= Math.pow(2, bb_bounceCount);
+            }
+            
+            let extraText = "";
+            if (!['deathrun', 'scharfschuetze'].includes(bb_mainMode)) {
+                if(bb_portalBonus > 0) extraText += ` (+${bb_portalBonus} Portal)`;
+                if(bb_bounceCount > 0) extraText += ` (Wand x${Math.pow(2, bb_bounceCount)})`;
+            }
+            
+            bb_score += pE_Bach; bb_stage++; bb_projectile = null;
+            
+            let sE = document.getElementById("status");
+            sE.innerText = (['deathrun', 'scharfschuetze'].includes(bb_mainMode)) ? `TREFFER! Stage Cleared!` : `TREFFER! +${pE_Bach} Punkte!${extraText}`;
+            sE.style.color = "#2ecc71"; draw_bb();
+            setTimeout(nextLevel_Bach, 2000); 
+        } else {
+            bb_projectile = null; let sE = document.getElementById("status");
+            if (bb_shotsLeft <= 0) {
+                bb_isGameOver = true;
+                sE.innerText = (['challenge', 'chaos'].includes(bb_mainMode)) ? "RUN FAILED!" : "GAME OVER!"; 
+                sE.style.color = "#e74c3c"; draw_bb(); setTimeout(fullReset_bb, 3000); 
+            } else { sE.innerText = `Daneben. Noch ${bb_shotsLeft} Schuss!`; sE.style.color = "var(--text-color)"; draw_bb(); }
+        }
+    }
+
+    function update_Bach() {
+        if (!bb_projectile || isScrubbing_Bach) return;
+        
+        let dt_bb = 0.05; let gravity_Bach = bb_activeVisualMode === 'tank' ? 30 : 15;   
+        trajectoryHistory_bb.push({ x: bb_projectile.x, y: bb_projectile.y, vx: bb_projectile.vx, vy: bb_projectile.vy, t: bb_projectile.t });
+
+        let oldX = bb_projectile.x; let oldY = bb_projectile.y;
+        bb_projectile.t += dt_bb;
+        if(bb_projectile.tpCool > 0) bb_projectile.tpCool -= dt_bb;
+
+        bb_projectile.x += bb_projectile.vx * dt_bb; 
+        bb_projectile.y += bb_projectile.vy * dt_bb; 
+        bb_projectile.vy -= gravity_Bach * dt_bb; 
+        
+        if (document.getElementById("windToggle").checked) bb_projectile.vx += windVector_Bach.x * 6 * dt_bb; 
+
+        if (bb_mainMode === 'mathe') updateLiveMath_Bach(bb_projectile);
+
+        let didTeleport_Bach = false; 
+
+        if (bb_portals.length === 2 && bb_projectile.tpCool <= 0) {
+            let pIndex = -1;
+            bb_portals.forEach((pt, i) => {
+                if(Math.hypot(bb_projectile.x - pt.x, bb_projectile.y - pt.y) < pt.r) pIndex = i;
+            });
+            if(pIndex !== -1) {
+                let other = bb_portals[1 - pIndex];
+                bb_projectile.x = other.x; bb_projectile.y = other.y;
+                bb_projectile.tpCool = 0.5; 
+                didTeleport_Bach = true; 
+                bb_portalBonus += 5; 
+            }
+        }
+
+        if (bb_obstacles.length > 0 && !didTeleport_Bach) {
+            bb_obstacles.forEach(ob => {
+                let inter = getLineIntersection(oldX, oldY, bb_projectile.x, bb_projectile.y, ob.x1, ob.y1, ob.x2, ob.y2);
+                if (inter) {
+                    let dx = ob.x2 - ob.x1, dy = ob.y2 - ob.y1;
+                    let len = Math.hypot(dx, dy);
+                    let nx = -dy / len, ny = dx / len;
+                    let dot = bb_projectile.vx * nx + bb_projectile.vy * ny;
+                    if(dot > 0) { nx = -nx; ny = -ny; dot = -dot; }
+                    
+                    bb_projectile.vx = (bb_projectile.vx - 2 * dot * nx) * 0.9;
+                    bb_projectile.vy = (bb_projectile.vy - 2 * dot * ny) * 0.9;
+                    bb_projectile.x = inter.x + nx * 0.5; bb_projectile.y = inter.y + ny * 0.5;
+                    bb_bounceCount++; logMathBounce_bb('o');
+                }
+            });
+        }
+
+        if (document.getElementById("bounceToggle").checked && !didTeleport_Bach) {
+            let rW_bb = (canvas_bb.width - originX_Bach) / scale_bb, tW_Bach = originY_Bach / scale_bb;                    
+            if (bb_projectile.x > rW_bb) { bb_projectile.x = rW_bb; bb_projectile.vx *= -0.8; bb_bounceCount++; logMathBounce_bb('x'); }
+            if (bb_projectile.x < 0)  { bb_projectile.x = 0;  bb_projectile.vx *= -0.8; bb_bounceCount++; logMathBounce_bb('x'); }
+            if (bb_projectile.y > tW_Bach) { bb_projectile.y = tW_Bach;  bb_projectile.vy *= -0.8; bb_bounceCount++; logMathBounce_bb('y'); }
+        }
+
+        if (bb_targetActive) {
+            if (Math.hypot(bb_projectile.x - target_Bach.x, bb_projectile.y - target_Bach.y) < target_Bach.radius + bb_projectile.radius) {
+                bb_targetActive = false;
+                trajectoryHistory_bb.push({ x: bb_projectile.x, y: bb_projectile.y, vx: bb_projectile.vx, vy: bb_projectile.vy, t: bb_projectile.t });
+                endShot_bb(true); return;
+            }
+        }
+        
+        let rW_bb = (canvas_bb.width - originX_Bach) / scale_bb;
+        if (bb_projectile.y <= 0 || bb_projectile.x > rW_bb + 20 || bb_projectile.x < -20) {
+            if (bb_projectile.y < 0) bb_projectile.y = 0; 
+            trajectoryHistory_bb.push({ x: bb_projectile.x, y: bb_projectile.y, vx: bb_projectile.vx, vy: bb_projectile.vy, t: bb_projectile.t });
+            endShot_bb(false); return;
+        }
+        draw_bb(); animationId_Bach = requestAnimationFrame(update_Bach);
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+        ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
+        if (fill) ctx.fill(); if (stroke) ctx.stroke();
+    }
+
+    function drawGrid_Bach() {
+        ctx_Bach.font = "12px Arial";
+        let mX = Math.floor((canvas_bb.width - originX_Bach) / scale_bb), mY = Math.floor(originY_Bach / scale_bb);
+        let isLight = (bb_mainMode === 'mathe' && bb_subMode === 'basketball');
+        let gridColor = isLight ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.2)";
+        let axisColor = isLight ? "#555" : "#7f8c8d";
+        
+        for(let x = 0; x <= mX; x += 10) { ctx_Bach.beginPath(); ctx_Bach.moveTo(cX(x), 0); ctx_Bach.lineTo(cX(x), canvas_bb.height); ctx_Bach.strokeStyle = x === 0 ? axisColor : gridColor; ctx_Bach.lineWidth = x === 0 ? 2 : 0.5; ctx_Bach.stroke(); if (x > 0) { ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText(x, cX(x) - 8, cY(0) + 15); } }
+        for(let y = 0; y <= mY; y += 10) { ctx_Bach.beginPath(); ctx_Bach.moveTo(0, cY(y)); ctx_Bach.lineTo(canvas_bb.width, cY(y)); ctx_Bach.strokeStyle = y === 0 ? axisColor : gridColor; ctx_Bach.lineWidth = y === 0 ? 2 : 0.5; ctx_Bach.stroke(); if (y > 0) { ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText(y, cX(0) - 25, cY(y) + 4); } }
+        ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText("0", cX(0) - 15, cY(0) + 15); ctx_Bach.fillText("X", canvas_bb.width - 15, cY(0) - 5); ctx_Bach.fillText("Y", cX(0) + 5, 15);
+    }
+
+    function drawV5Objects_bb() {
+        bb_obstacles.forEach(ob => {
+            ctx_Bach.beginPath(); ctx_Bach.moveTo(cX(ob.x1), cY(ob.y1)); ctx_Bach.lineTo(cX(ob.x2), cY(ob.y2));
+            ctx_Bach.lineWidth = 4 * scale_bb; ctx_Bach.strokeStyle = "#f39c12"; ctx_Bach.lineCap = "round"; ctx_Bach.stroke();
+            ctx_Bach.lineWidth = 1.5 * scale_bb; ctx_Bach.strokeStyle = "#fff"; ctx_Bach.stroke();
+        });
+
+        bb_portals.forEach(p => {
+            let pX = cX(p.x), pY = cY(p.y), pR = p.r * scale_bb;
+            ctx_Bach.beginPath(); ctx_Bach.arc(pX, pY, pR, 0, Math.PI*2);
+            ctx_Bach.fillStyle = "#8e44ad"; ctx_Bach.fill(); ctx_Bach.lineWidth = 3; ctx_Bach.strokeStyle = "#2ecc71"; ctx_Bach.stroke();
+            ctx_Bach.beginPath(); ctx_Bach.arc(pX, pY, pR*0.5, 0, Math.PI*2); ctx_Bach.fillStyle = "#2c3e50"; ctx_Bach.fill();
+        });
+    }
+
+    function drawTank(t, inputX, inputY) {
+        let tX = cX(t.x), tY = cY(t.y), sW = scale_bb;
+        let theme = themes_bb[bb_mainMode + '_' + bb_subMode] || themes_bb['classic_tank'];
+        if(['challenge','deathrun','scharfschuetze','chaos'].includes(bb_mainMode) && bb_subMode === 'mix') theme = themes_bb[bb_mainMode+'_tank'];
+
+        let colDark = theme.tankDark || "#4B5320"; let colLight = theme.tankLight || "#556B2F"; let colTrack = theme.track || "#36454F";
+        ctx_Bach.save();
+        let lcWidth = 13 * sW, lcHeight = 3 * sW;
+        let lcX = tX - lcWidth * 0.45, lcY = tY + 4 * sW * 0.3; let lcRadius = lcHeight / 2;
+        ctx_Bach.fillStyle = colDark; ctx_Bach.strokeStyle = colTrack; ctx_Bach.lineWidth = 2;
+        roundRect(ctx_Bach, lcX, lcY, lcWidth, lcHeight, lcRadius, true, true);
+
+        let wRad = (lcRadius * 0.9) - 3, span = lcWidth - 2 * lcRadius;
+        for (let i = 0; i < 4; i++) {
+            let sX = lcX + lcRadius + (i * span / 3);
+            ctx_Bach.beginPath(); ctx_Bach.arc(sX, lcY + lcRadius, wRad, 0, Math.PI * 2);
+            ctx_Bach.fillStyle = colTrack; ctx_Bach.fill(); ctx_Bach.strokeStyle = "rgba(0,0,0,0.5)"; ctx_Bach.lineWidth = 1; ctx_Bach.stroke();
+        }
+
+        let ucWidth = 9 * sW, ucHeight = 4 * sW;
+        let ucX = tX - ucWidth * 0.55, ucY = tY - ucHeight * 0.6;
+        ctx_Bach.fillStyle = colDark; ctx_Bach.beginPath(); ctx_Bach.moveTo(ucX + ucWidth * 0.1, ucY); ctx_Bach.lineTo(ucX + ucWidth, ucY); ctx_Bach.lineTo(ucX + ucWidth * 0.8, ucY + ucHeight); ctx_Bach.lineTo(ucX, ucY + ucHeight); ctx_Bach.closePath(); ctx_Bach.fill();
+        
+        let tbWidth = 6 * sW, tbHeight = 3 * sW;
+        let tbX = tX - ucWidth * 0.4, tbY = ucY - tbHeight * 0.7;
+        ctx_Bach.beginPath(); ctx_Bach.moveTo(tbX, tbY + tbHeight); ctx_Bach.lineTo(tbX + tbWidth, tbY + tbHeight); ctx_Bach.lineTo(tbX + tbWidth * 0.8, tbY + tbHeight * 0.1); ctx_Bach.lineTo(tbX + tbWidth * 0.1, tbY + tbHeight * 0.1); ctx_Bach.closePath(); ctx_Bach.fillStyle = colLight; ctx_Bach.fill();
+        ctx_Bach.beginPath(); ctx_Bach.arc(tbX + tbWidth * 0.4, tbY + tbHeight * 0.1, 1.5 * sW, Math.PI, 0); ctx_Bach.fillStyle = colDark; ctx_Bach.fill();
+
+        if (!isNaN(inputX) && !isNaN(inputY) && (inputX !== 0 || inputY !== 0)) {
+            ctx_Bach.save(); ctx_Bach.translate(cX(t.x), cY(t.y)); let angle = Math.atan2(-inputY, inputX); ctx_Bach.rotate(angle);
+            ctx_Bach.fillStyle = colDark; let bLen = 9 * sW, bWid = 1.2 * sW;
+            ctx_Bach.fillRect(0, -bWid / 2 - 1, bLen * 0.15, bWid + 2); ctx_Bach.fillRect(bLen * 0.15, -bWid / 2, bLen * 0.85, bWid); 
+            ctx_Bach.beginPath(); let mXStart = bLen, mWid = 2 * sW; ctx_Bach.moveTo(mXStart, -bWid / 2); ctx_Bach.lineTo(mXStart + mWid * 0.6, -mWid / 2); ctx_Bach.lineTo(mXStart + mWid, 0); ctx_Bach.lineTo(mXStart + mWid * 0.6, mWid / 2); ctx_Bach.lineTo(mXStart, bWid / 2); ctx_Bach.closePath(); ctx_Bach.fillStyle = colTrack; ctx_Bach.fill();
+            ctx_Bach.restore();
+        }
+        ctx_Bach.restore(); 
+    }
+
+    function drawHand(inputX, inputY) {
+        ctx_Bach.save(); ctx_Bach.translate(cX(originObj_Bach.x), cY(originObj_Bach.y));
+        if (!isNaN(inputX) && !isNaN(inputY) && (inputX !== 0 || inputY !== 0)) { let angle = Math.atan2(-inputY, inputX); ctx_Bach.rotate(angle); }
+        ctx_Bach.fillStyle = (bb_mainMode==='mathe') ? "#A8A591" : "#f1c27d"; 
+        ctx_Bach.fillRect(-10 * scale_bb, -2 * scale_bb, 12 * scale_bb, 4 * scale_bb); 
+        ctx_Bach.beginPath(); ctx_Bach.arc(2 * scale_bb, 0, 3.5 * scale_bb, 0, Math.PI * 2); ctx_Bach.fill(); ctx_Bach.strokeStyle = "rgba(0,0,0,0.3)"; ctx_Bach.lineWidth = 1; ctx_Bach.stroke();
+        ctx_Bach.restore();
+    }
+
+    function drawTargetBoard_Bach() {
+        let tX = cX(target_Bach.x), tY = cY(target_Bach.y), tR = target_Bach.radius * scale_bb;
+        let cRed = (bb_mainMode==='mathe') ? "#4F575C" : getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+        if(['classic','wurmloch','bounce'].includes(bb_mainMode)) cRed = "#e74c3c";
+        
+        ctx_Bach.beginPath(); ctx_Bach.arc(tX, tY, tR, 0, Math.PI * 2); ctx_Bach.fillStyle = cRed; ctx_Bach.fill(); ctx_Bach.strokeStyle = "black"; ctx_Bach.lineWidth = 1.5; ctx_Bach.stroke();
+        ctx_Bach.beginPath(); ctx_Bach.arc(tX, tY, tR * 0.75, 0, Math.PI * 2); ctx_Bach.fillStyle = "white"; ctx_Bach.fill();
+        ctx_Bach.beginPath(); ctx_Bach.arc(tX, tY, tR * 0.5, 0, Math.PI * 2); ctx_Bach.fillStyle = cRed; ctx_Bach.fill();
+        ctx_Bach.beginPath(); ctx_Bach.arc(tX, tY, tR * 0.25, 0, Math.PI * 2); ctx_Bach.fillStyle = "white"; ctx_Bach.fill();
+    }
+
+    function drawHoop_bb() {
+        let tX = cX(target_Bach.x); let tY = cY(target_Bach.y); let tR = target_Bach.radius * scale_bb;
+        let cRed = (bb_mainMode==='mathe') ? "#4F575C" : getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+        if(['classic','wurmloch','bounce'].includes(bb_mainMode)) cRed = "#e74c3c";
+
+        ctx_Bach.fillStyle = "white"; ctx_Bach.fillRect(tX + tR, tY - tR * 2, 6, tR * 4); ctx_Bach.strokeStyle = cRed; ctx_Bach.lineWidth = 2; ctx_Bach.strokeRect(tX + tR, tY - tR * 2, 6, tR * 4);
+        ctx_Bach.strokeStyle = (bb_mainMode==='mathe') ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.6)"; ctx_Bach.lineWidth = 1.5; ctx_Bach.beginPath(); ctx_Bach.moveTo(tX - tR, tY); ctx_Bach.lineTo(tX - tR + 6, tY + tR * 2); ctx_Bach.moveTo(tX + tR, tY); ctx_Bach.lineTo(tX + tR - 6, tY + tR * 2); ctx_Bach.moveTo(tX - tR*0.5, tY); ctx_Bach.lineTo(tX, tY + tR * 2); ctx_Bach.moveTo(tX + tR*0.5, tY); ctx_Bach.lineTo(tX, tY + tR * 2); ctx_Bach.stroke();
+        ctx_Bach.strokeStyle = cRed; ctx_Bach.lineWidth = 4; ctx_Bach.beginPath(); ctx_Bach.moveTo(tX - tR, tY); ctx_Bach.lineTo(tX + tR, tY); ctx_Bach.stroke();
+    }
+
+    function drawGameOverOverlay_Bach() {
+        ctx_Bach.fillStyle = "rgba(0, 0, 0, 0.85)"; ctx_Bach.fillRect(0, 0, canvas_bb.width, canvas_bb.height);
+        let isWin = (['challenge','chaos'].includes(bb_mainMode) && bb_stage > 10);
+        ctx_Bach.fillStyle = isWin ? "#f1c40f" : "#e74c3c"; 
+        ctx_Bach.font = "bold 60px Arial"; ctx_Bach.textAlign = "center"; ctx_Bach.textBaseline = "middle";
+        
+        let headerTxt = "GAME OVER!";
+        if(isWin) headerTxt = "RUN BEENDET!";
+        
+        ctx_Bach.fillText(headerTxt, canvas_bb.width / 2, canvas_bb.height / 2 - 30);
+        ctx_Bach.fillStyle = "white"; ctx_Bach.font = "bold 25px Arial";
+        let ptsTxt = (['deathrun', 'scharfschuetze'].includes(bb_mainMode)) ? `Erreichte Stages: ${bb_score}` : `Punkte: ${bb_score}`;
+        ctx_Bach.fillText(ptsTxt, canvas_bb.width / 2, canvas_bb.height / 2 + 40);
+        
+        let isNewHS = checkHighscore_bb();
+        if(isNewHS) {
+            ctx_Bach.fillStyle = "#2ecc71"; ctx_Bach.font = "bold 20px Arial";
+            ctx_Bach.fillText("NEUER HIGHSCORE!", canvas_bb.width / 2, canvas_bb.height / 2 + 80);
+        } else if (!isWin) {
+            ctx_Bach.fillStyle = "white"; ctx_Bach.font = "18px Arial";
+            ctx_Bach.fillText("Neustart in 3 Sekunden...", canvas_bb.width / 2, canvas_bb.height / 2 + 80);
+        }
+    }
+
+    function draw_bb(fromHistory = false) {
+        ctx_Bach.clearRect(0, 0, canvas_bb.width, canvas_bb.height);
+        drawGrid_Bach(); drawV5Objects_bb();
+
+        let stageTxt_Bach = (['classic','wurmloch','bounce','mathe'].includes(bb_mainMode)) ? `Stufe: ${bb_stage}` : `Stage: ${bb_stage}`;
+        if(['challenge','chaos'].includes(bb_mainMode)) stageTxt_Bach += `/10`;
+        let scoreTxt_bb = (['deathrun', 'scharfschuetze'].includes(bb_mainMode)) ? `Clears: ${bb_score}` : `Punkte: ${bb_score}`;
+        let statusDisplay = "";
+
+        if (bb_mainMode === 'mathe') {
+            if(!bb_projectile && !isScrubbing_Bach) statusDisplay = mathShotDone_Bach ? (bb_targetActive ? "DANEBEN!" : "TREFFER!") : "Wartet auf Schuss";
+            else statusDisplay = "Live-Berechnung";
+        } else {
+            if(!bb_projectile) {
+                if(bb_isGameOver) statusDisplay = "GAME OVER";
+                else if(!bb_targetActive) {
+                    let extraText = (bb_bounceCount > 0 && !['deathrun','scharfschuetze'].includes(bb_mainMode)) ? ` (Wand x${Math.pow(2, bb_bounceCount)})` : "";
+                    statusDisplay = `TREFFER!${extraText}`;
+                } else statusDisplay = "Bereit...";
+            } else {
+                statusDisplay = "Projektil fliegt...";
+            }
+        }
+        document.getElementById("status").innerText = statusDisplay;
+        document.getElementById("status").style.color = (statusDisplay.includes("TREFFER") ? "#2ecc71" : (statusDisplay.includes("DANEBEN") || statusDisplay.includes("GAME OVER") ? "#e74c3c" : "var(--text-color)"));
+
+        ctx_Bach.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx_Bach.fillRect(10, 10, 200, 90); 
+        ctx_Bach.fillStyle = "white"; ctx_Bach.font = "bold 18px Arial"; ctx_Bach.textAlign = "left"; ctx_Bach.textBaseline = "top"; 
+        
+        if (bb_mainMode === 'mathe') {
+            ctx_Bach.fillText("Modus: MATHE", 20, 22); ctx_Bach.fillText("Keine Punkte", 20, 47);
+            ctx_Bach.fillStyle = "#2ecc71"; ctx_Bach.fillText("Freies Zielen", 20, 72);
+        } else {
+            ctx_Bach.fillText(stageTxt_Bach, 20, 22); ctx_Bach.fillText(scoreTxt_bb, 20, 47);
+            ctx_Bach.fillStyle = bb_shotsLeft === 1 ? "#e74c3c" : "#2ecc71"; ctx_Bach.fillText(`Schüsse übrig: ${bb_shotsLeft}`, 20, 72);
+        }
+
+        if (document.getElementById("windToggle").checked) {
+            ctx_Bach.fillStyle = "rgba(41, 128, 185, 0.8)"; ctx_Bach.fillRect(canvas_bb.width / 2 - 80, 10, 160, 30);
+            ctx_Bach.fillStyle = "white"; let direction = windVector_Bach.x > 0 ? "→" : "←";
+            ctx_Bach.textAlign="center"; ctx_Bach.textBaseline="middle"; ctx_Bach.font="18px Arial";
+            ctx_Bach.fillText(`Wind: ${Math.abs(windVector_Bach.x)} ${direction}`, canvas_bb.width / 2, 25);
+        }
+
+        if (bb_targetActive || isScrubbing_Bach) {
+            if (bb_activeVisualMode === 'tank') { drawTargetBoard_Bach(); } else { drawHoop_bb(); }
+        }
+
+        let inputX_bb = parseFloat(document.getElementById("vecX").value); let inputY_Bach = parseFloat(document.getElementById("vecY").value);
+        if (isNaN(inputX_bb)) inputX_bb = 0; if (isNaN(inputY_Bach)) inputY_Bach = 0;
+        if (inputX_bb !== 0 || inputY_Bach !== 0) {
+            let sX = cX(originObj_Bach.x), sY = cY(originObj_Bach.y), eX = cX(inputX_bb), eY = cY(inputY_Bach);
+            let vCol = (bb_mainMode==='mathe' && bb_activeVisualMode==='basketball') ? "#555" : "#383E42";
+            ctx_Bach.beginPath(); ctx_Bach.moveTo(sX, sY); ctx_Bach.lineTo(eX, eY); ctx_Bach.strokeStyle = vCol; ctx_Bach.lineWidth = 3; ctx_Bach.setLineDash([8, 4]); ctx_Bach.stroke(); ctx_Bach.setLineDash([]); 
+            let angle = Math.atan2(eY - sY, eX - sX); ctx_Bach.beginPath(); ctx_Bach.moveTo(eX, eY); ctx_Bach.lineTo(eX - 12 * Math.cos(angle - Math.PI / 6), eY - 12 * Math.sin(angle - Math.PI / 6)); ctx_Bach.lineTo(eX - 12 * Math.cos(angle + Math.PI / 6), eY - 12 * Math.sin(angle + Math.PI / 6)); ctx_Bach.closePath(); ctx_Bach.fillStyle = vCol; ctx_Bach.fill();
+        }
+
+        if (bb_activeVisualMode === 'tank') { 
+            let tX = cX(originObj_Bach.x), tY = cY(originObj_Bach.y), sW = scale_bb;
+            let theme = themes_bb[bb_mainMode + '_' + bb_subMode] || themes_bb['classic_tank'];
+            if(['challenge','deathrun','scharfschuetze','chaos'].includes(bb_mainMode) && bb_subMode === 'mix') theme = themes_bb[bb_mainMode+'_tank'];
+            let colDark = theme.tankDark || "#4B5320"; let colLight = theme.tankLight || "#556B2F"; let colTrack = theme.track || "#36454F";
+            ctx_Bach.save();
+            let lcWidth = 13 * sW, lcHeight = 3 * sW;
+            let lcX = tX - lcWidth * 0.45, lcY = tY + 4 * sW * 0.3; let lcRadius = lcHeight / 2;
+            ctx_Bach.fillStyle = colDark; ctx_Bach.strokeStyle = colTrack; ctx_Bach.lineWidth = 2;
+            roundRect(ctx_Bach, lcX, lcY, lcWidth, lcHeight, lcRadius, true, true);
+            let wRad = (lcRadius * 0.9) - 3, span = lcWidth - 2 * lcRadius;
+            for (let i = 0; i < 4; i++) {
+                let sX = lcX + lcRadius + (i * span / 3);
+                ctx_Bach.beginPath(); ctx_Bach.arc(sX, lcY + lcRadius, wRad, 0, Math.PI * 2);
+                ctx_Bach.fillStyle = colTrack; ctx_Bach.fill(); ctx_Bach.strokeStyle = "rgba(0,0,0,0.5)"; ctx_Bach.lineWidth = 1; ctx_Bach.stroke();
+            }
+            let ucWidth = 9 * sW, ucHeight = 4 * sW;
+            let ucX = tX - ucWidth * 0.55, ucY = tY - ucHeight * 0.6;
+            ctx_Bach.fillStyle = colDark; ctx_Bach.beginPath(); ctx_Bach.moveTo(ucX + ucWidth * 0.1, ucY); ctx_Bach.lineTo(ucX + ucWidth, ucY); ctx_Bach.lineTo(ucX + ucWidth * 0.8, ucY + ucHeight); ctx_Bach.lineTo(ucX, ucY + ucHeight); ctx_Bach.closePath(); ctx_Bach.fill();
+            let tbWidth = 6 * sW, tbHeight = 3 * sW;
+            let tbX = tX - ucWidth * 0.4, tbY = ucY - tbHeight * 0.7;
+            ctx_Bach.beginPath(); ctx_Bach.moveTo(tbX, tbY + tbHeight); ctx_Bach.lineTo(tbX + tbWidth, tbY + tbHeight); ctx_Bach.lineTo(tbX + tbWidth * 0.8, tbY + tbHeight * 0.1); ctx_Bach.lineTo(tbX + tbWidth * 0.1, tbY + tbHeight * 0.1); ctx_Bach.closePath(); ctx_Bach.fillStyle = colLight; ctx_Bach.fill();
+            ctx_Bach.beginPath(); ctx_Bach.arc(tbX + tbWidth * 0.4, tbY + tbHeight * 0.1, 1.5 * sW, Math.PI, 0); ctx_Bach.fillStyle = colDark; ctx_Bach.fill();
+            if (!isNaN(inputX_bb) && !isNaN(inputY_Bach) && (inputX_bb !== 0 || inputY_Bach !== 0)) {
+                ctx_Bach.save(); ctx_Bach.translate(cX(originObj_Bach.x), cY(originObj_Bach.y)); let angle = Math.atan2(-inputY_Bach, inputX_bb); ctx_Bach.rotate(angle);
+                ctx_Bach.fillStyle = colDark; let bLen = 9 * sW, bWid = 1.2 * sW;
+                ctx_Bach.fillRect(0, -bWid / 2 - 1, bLen * 0.15, bWid + 2); ctx_Bach.fillRect(bLen * 0.15, -bWid / 2, bLen * 0.85, bWid); 
+                ctx_Bach.beginPath(); let mXStart = bLen, mWid = 2 * sW; ctx_Bach.moveTo(mXStart, -bWid / 2); ctx_Bach.lineTo(mXStart + mWid * 0.6, -mWid / 2); ctx_Bach.lineTo(mXStart + mWid, 0); ctx_Bach.lineTo(mXStart + mWid * 0.6, mWid / 2); ctx_Bach.lineTo(mXStart, bWid / 2); ctx_Bach.closePath(); ctx_Bach.fillStyle = colTrack; ctx_Bach.fill();
+                ctx_Bach.restore();
+            }
+            ctx_Bach.restore(); 
+        } else { 
+            ctx_Bach.save(); ctx_Bach.translate(cX(originObj_Bach.x), cY(originObj_Bach.y));
+            if (!isNaN(inputX_bb) && !isNaN(inputY_Bach) && (inputX_bb !== 0 || inputY_Bach !== 0)) { let angle = Math.atan2(-inputY_Bach, inputX_bb); ctx_Bach.rotate(angle); }
+            ctx_Bach.fillStyle = (bb_mainMode==='mathe') ? "#A8A591" : "#f1c27d"; 
+            ctx_Bach.fillRect(-10 * scale_bb, -2 * scale_bb, 12 * scale_bb, 4 * scale_bb); 
+            ctx_Bach.beginPath(); ctx_Bach.arc(2 * scale_bb, 0, 3.5 * scale_bb, 0, Math.PI * 2); ctx_Bach.fill(); ctx_Bach.strokeStyle = "rgba(0,0,0,0.3)"; ctx_Bach.lineWidth = 1; ctx_Bach.stroke();
+            ctx_Bach.restore();
+        }
+
+        if (fromHistory && isScrubbing_Bach && trajectoryHistory_bb.length > 0) {
+            ctx_Bach.save();
+            for (let i = 0; i < scrubIndex_bb; i++) {
+                let p1 = trajectoryHistory_bb[i], p2 = trajectoryHistory_bb[i+1];
+                if(p1 && p2) {
+                    ctx_Bach.strokeStyle = `rgba(52, 152, 219, 0.9)`; ctx_Bach.lineWidth = 2; 
+                    ctx_Bach.beginPath(); ctx_Bach.moveTo(cX(p1.x), cY(p1.y)); ctx_Bach.lineTo(cX(p2.x), cY(p2.y)); ctx_Bach.stroke();
+                }
+            }
+            ctx_Bach.restore();
+            
+            let state = trajectoryHistory_bb[scrubIndex_bb];
+            if (state) {
+                if (bb_activeVisualMode === 'tank') { 
+                    ctx_Bach.save(); ctx_Bach.translate(cX(state.x), cY(state.y)); let angle = Math.atan2(-state.vy, state.vx); ctx_Bach.rotate(angle); 
+                    let pL = 4 * scale_bb, pW = 1.5 * scale_bb;
+                    ctx_Bach.fillStyle = "#f1c40f"; ctx_Bach.fillRect(-pL / 2, -pW / 2, pL * 0.7, pW); ctx_Bach.beginPath(); ctx_Bach.moveTo(pL * 0.2, -pW / 2); ctx_Bach.lineTo(pL / 2, 0); ctx_Bach.lineTo(pL * 0.2, pW / 2); ctx_Bach.fillStyle = "#36454F"; ctx_Bach.fill(); ctx_Bach.restore();
+                } else { 
+                    ctx_Bach.save(); ctx_Bach.translate(cX(state.x), cY(state.y)); let spinAngle = state.x * 0.5; ctx_Bach.rotate(spinAngle); let pR = 2.5 * scale_bb;
+                    ctx_Bach.beginPath(); ctx_Bach.arc(0, 0, pR, 0, Math.PI * 2); ctx_Bach.fillStyle = (bb_mainMode==='mathe')?"#989581":"#e67e22"; ctx_Bach.fill(); ctx_Bach.lineWidth = 1.5; ctx_Bach.strokeStyle = "#2c3e50"; ctx_Bach.stroke();
+                    ctx_Bach.beginPath(); ctx_Bach.moveTo(-pR, 0); ctx_Bach.lineTo(pR, 0); ctx_Bach.stroke(); ctx_Bach.beginPath(); ctx_Bach.moveTo(0, -pR); ctx_Bach.lineTo(0, pR); ctx_Bach.stroke(); ctx_Bach.restore();
+                }
+            }
+
+        } else if (bb_projectile) { 
+            if (bb_activeVisualMode === 'tank') { 
+                if(trajectoryHistory_bb && trajectoryHistory_bb.length > 1) { 
+                    ctx_Bach.save();
+                    for (let i = 0; i < trajectoryHistory_bb.length - 1; i++) {
+                        let p1 = trajectoryHistory_bb[i], p2 = trajectoryHistory_bb[i+1], alpha = (trajectoryHistory_bb.length - i) / trajectoryHistory_bb.length;
+                        ctx_Bach.strokeStyle = `rgba(189, 195, 201, ${alpha})`; ctx_Bach.lineWidth = 1 + (trajectoryHistory_bb.length - i) / 5;
+                        ctx_Bach.beginPath(); ctx_Bach.moveTo(cX(p1.x), cY(p1.y)); ctx_Bach.lineTo(cX(p2.x), cY(p2.y)); ctx_Bach.stroke();
+                    } ctx_Bach.restore();
+                }
+                ctx_Bach.save(); ctx_Bach.translate(cX(bb_projectile.x), cY(bb_projectile.y)); let angle = Math.atan2(-bb_projectile.vy, bb_projectile.vx); ctx_Bach.rotate(angle); let pL = bb_projectile.length * scale_bb, pW = bb_projectile.width * scale_bb;
+                ctx_Bach.fillStyle = "#f1c40f"; ctx_Bach.fillRect(-pL / 2, -pW / 2, pL * 0.7, pW); ctx_Bach.beginPath(); ctx_Bach.moveTo(pL * 0.2, -pW / 2); ctx_Bach.lineTo(pL / 2, 0); ctx_Bach.lineTo(pL * 0.2, pW / 2); ctx_Bach.fillStyle = "#36454F"; ctx_Bach.fill(); ctx_Bach.restore();
+            } else { 
+                ctx_Bach.save(); ctx_Bach.translate(cX(bb_projectile.x), cY(bb_projectile.y)); let spinAngle = bb_projectile.x * 0.5; ctx_Bach.rotate(spinAngle); let pR = bb_projectile.radius * scale_bb;
+                ctx_Bach.beginPath(); ctx_Bach.arc(0, 0, pR, 0, Math.PI * 2); ctx_Bach.fillStyle = (bb_mainMode==='mathe')?"#989581":"#e67e22"; ctx_Bach.fill(); ctx_Bach.lineWidth = 1.5; ctx_Bach.strokeStyle = "#2c3e50"; ctx_Bach.stroke();
+                ctx_Bach.beginPath(); ctx_Bach.moveTo(-pR, 0); ctx_Bach.lineTo(pR, 0); ctx_Bach.stroke(); ctx_Bach.beginPath(); ctx_Bach.moveTo(0, -pR); ctx_Bach.lineTo(0, pR); ctx_Bach.stroke(); ctx_Bach.restore();
+            }
+        }
+
+        if ((bb_isGameOver || (['challenge','chaos'].includes(bb_mainMode) && bb_stage > 10)) && !isScrubbing_Bach) { drawGameOverOverlay_Bach(); }
+
+        // --- DEV TRADEMARK ON CANVAS (50% transparent) ---
+        ctx_Bach.save(); ctx_Bach.fillStyle = "rgba(127, 140, 141, 0.5)"; ctx_Bach.font = "10px Arial"; ctx_Bach.textAlign = "right"; ctx_Bach.textBaseline = "bottom"; ctx_Bach.fillText("dev by BB", canvas_bb.width - 10, canvas_bb.height - 10); ctx_Bach.restore();
+    }
+
+    setMainMode_bb('classic');
+});
+</script>
+
 </body>
 </html>
