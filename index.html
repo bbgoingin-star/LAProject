@@ -21,7 +21,7 @@
             font-family: Arial, sans-serif; 
             background-color: var(--bg-color); 
             color: var(--text-color); 
-            margin: 0; padding: 15px 20px;
+            margin: 0; padding: 15px 0; /* Oben/unten padding, kein links/rechts */
             display: flex; flex-direction: column; align-items: center;
             transition: background-color 0.4s ease, color 0.4s ease;
             box-sizing: border-box; height: 100vh; overflow: hidden;
@@ -32,21 +32,24 @@
         .sub-title { font-size: 18px; color: rgba(255, 255, 255, 0.5); letter-spacing: 3px; margin-bottom: -5px; text-transform: uppercase; font-weight: bold; }
         .main-title { font-size: 56px; font-family: "Pixelify Sans", sans-serif; font-weight: 700; color: white; text-shadow: 4px 4px 0px rgba(0,0,0,0.5); margin: 0; letter-spacing: 2px; }
 
-        /* --- LAYOUT: 3 Spalten --- */
+        /* --- LAYOUT: 3 Spalten (NEU: RESPONSIVE FLEX) --- */
         .app-container { 
             display: flex; gap: 20px; align-items: flex-start; justify-content: center; 
-            width: 100%; max-width: 1700px; /* Erhöht für Ultrawide */
-            height: calc(100vh - 100px); min-height: 400px; 
+            width: calc(100% - 40px); /* Nutzt 100% Breite minus Seitenabstand */
+            max-width: 2000px; /* Erlaubt sehr breite Layouts auf Ultrawide */
+            height: calc(100vh - 100px); min-height: 400px;
         }
         
         .sidebar-left, .sidebar-right { 
-            display: flex; flex-direction: column; gap: 12px; width: 170px; flex-shrink: 0; 
-            height: 100%; overflow-y: auto; padding-right: 5px; 
+            display: flex; flex-direction: column; gap: 12px; 
+            width: 160px; /* Schlankere sidebars, um dem Spielfeld Platz zu geben */
+            flex-shrink: 0; height: 100%; overflow-y: auto; padding-right: 5px; 
         }
         
         .center-column { 
-            display: flex; flex-direction: column; gap: 12px; flex-grow: 1; 
-            height: 100%; min-width: 0; min-height: 0; /* Erlaubt Shrinking */
+            display: flex; flex-direction: column; gap: 12px; 
+            flex-grow: 1; /* Nimmt den restlichen Platz ein */
+            height: 100%; min-width: 0; min-height: 0; /* Wichtig für responsive Skalierung */
         }
 
         /* Scrollbars für Sidebars */
@@ -71,17 +74,20 @@
         .sub-mode-btn.active { background-color: var(--accent-color); border-left-color: white; }
         .sub-mode-btn:hover { filter: brightness(1.2); }
 
-        /* --- CANVAS & CONTROLS (DYNAMISCH RESPONSIVE FIX) --- */
+        /* --- CANVAS & CONTROLS (NEU: PROPORTIONALER WRAPPER) --- */
         .canvas-container { 
-            position: relative; flex-grow: 1; min-height: 0; display: flex;
-            width: 100%; box-sizing: border-box;
+            position: relative; flex-grow: 1; min-height: 0; 
+            display: flex; align-items: center; justify-content: center; width: 100%; 
         }
-        
+        .canvas-aspect-wrapper {
+            position: relative; max-width: 100%; max-height: 100%; 
+            aspect-ratio: 90 / 55; /* Hält IMMER die 900x550 Proportionen, skaliert aber dynamisch hoch! */
+            height: 100%; width: 100%;
+        }
         canvas { 
             background-color: #ecf0f1; border: 3px solid var(--ui-color); border-radius: 5px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.6); transition: border-color 0.4s ease; 
             width: 100%; height: 100%; display: block; box-sizing: border-box;
-            object-fit: fill; /* Verhindert letterboxing, JS skaliert Koordinaten */
         }
 
         #timelineContainer {
@@ -108,7 +114,7 @@
         .highscore-panel h3 { margin: 0 0 10px 0; font-size: 13px; text-align: center; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1px;}
         .hs-section { margin-bottom: 10px; background: rgba(0,0,0,0.15); padding: 6px; border-radius: 4px; }
         .hs-section h4 { margin: 0 0 6px 0; font-size: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; color: #ecf0f1;}
-        .hs-entry { font-size: 11px; margin-bottom: 3px; display: flex; justify(Content: space-between; font-weight: bold;}
+        .hs-entry { font-size: 11px; margin-bottom: 3px; display: flex; justify-content: space-between; font-weight: bold;}
 
         /* --- MATHE PANEL --- */
         #mathPanel { background-color: rgba(255, 255, 255, 0.95); color: #2c3e50; padding: 10px 15px; border-radius: 5px; border: 2px solid #383E42; display: none; flex-direction: column; font-family: "Courier New", Courier, monospace; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; overflow-y: auto;}
@@ -150,12 +156,14 @@
 
         <main class="center-column">
             <div class="canvas-container">
-                <canvas id="gameCanvas"></canvas>
-                
-                <div id="timelineContainer" class="hidden">
-                    <span id="timeCurrent" style="color: #2ecc71; font-weight: bold; font-family: monospace; width: 45px;">0.0s</span>
-                    <input type="range" id="timeSlider" min="0" value="0" step="1">
-                    <span id="timeMax" style="color: white; font-weight: bold; font-family: monospace; width: 45px;">1.0s</span>
+                <div class="canvas-aspect-wrapper">
+                    <canvas id="gameCanvas" width="900" height="550"></canvas>
+                    
+                    <div id="timelineContainer" class="hidden">
+                        <span id="timeCurrent" style="color: #2ecc71; font-weight: bold; font-family: monospace; width: 45px;">0.0s</span>
+                        <input type="range" id="timeSlider" min="0" value="0" step="1">
+                        <span id="timeMax" style="color: white; font-weight: bold; font-family: monospace; width: 45px;">1.0s</span>
+                    </div>
                 </div>
             </div>
 
@@ -234,40 +242,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas_bb = document.getElementById("gameCanvas");
     const ctx_Bach = canvas_bb.getContext("2d");
     
-    // -- DYNAMISCHE SKALIERUNG INITIALISIEREN --
-    // Wir fixieren die interne Logik-Höhe auf 550.
-    // Die Logik-Breite variiert nun dynamisch mit der Bildschirmgröße.
-    // Ursprüngliches Feld war 900x550, jetzt standardmäßig breiter 1100x550.
-    let logicWidth_bb = 1100;
-    const logicHeight_Bach = 550;
-    
-    let scale_bb = 1; // Wird dynamisch berechnet
-    let originX_Bach = 40; 
-    let originY_Bach = 510; // Wird dynamisch berechnet
-
-    function bb_resizeCanvas_Bach() {
-        const container = document.querySelector('.canvas-container');
-        const visualWidth = container.offsetWidth;
-        const visualHeight = container.offsetHeight;
-        
-        // Physikalische Auflösung des Canvas an visuelle Größe anpassen
-        canvas_bb.width = visualWidth;
-        canvas_bb.height = visualHeight;
-        
-        // Skalierungsfaktor berechnen (basierend auf Logik-Höhe 550)
-        scale_bb = visualHeight / logicHeight_Bach;
-        
-        // Dynamische Logik-Breite berechnen
-        logicWidth_bb = visualWidth / scale_bb;
-        
-        // Ursprung neu berechnen (Y-Achse gespiegelt)
-        originY_Bach = visualHeight - 40; // 40px Abstand unten fixiert
-
-        if(trajectoryHistory_bb.length > 0) draw_bb(isScrubbing_Bach);
-        else draw_bb();
-    }
-
-    // Canvas Funktionen aktualisieren für dynamischen Ursprung/Skalierung
+    // Logische Größe bleibt 900x550 für Physik und Logik - CSS übernimmt die Skalierung!
+    canvas_bb.width = 900; canvas_bb.height = 550;
+    const scale_bb = 4; const originX_Bach = 40; const originY_Bach = 510;    
     function cX(x) { return originX_Bach + x * scale_bb; }
     function cY(y) { return originY_Bach - y * scale_bb; }
 
@@ -384,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    const timeSlider = document.getElementById("timeSlider");
+    const timeSlider = document.getElementById("timelineContainer").querySelector("input");
     timeSlider.addEventListener("input", () => {
         scrubIndex_bb = parseInt(timeSlider.value);
         let state = trajectoryHistory_bb[scrubIndex_bb];
@@ -489,17 +466,15 @@ document.addEventListener("DOMContentLoaded", () => {
         bb_portals = []; bb_obstacles = [];
         
         if (bb_mainMode === 'wurmloch' || bb_mainMode === 'chaos') {
-            // Portale nutzen dynamische Breite
-            bb_portals.push({x: logicWidth_bb * 0.2 + Math.random()*20, y: 20 + Math.random()*50, r: 8});
-            bb_portals.push({x: logicWidth_bb * 0.7 + Math.random()*20, y: 20 + Math.random()*50, r: 8});
+            bb_portals.push({x: 60 + Math.random()*40, y: 20 + Math.random()*50, r: 8});
+            bb_portals.push({x: 130 + Math.random()*60, y: 20 + Math.random()*50, r: 8});
         }
         
         if (bb_mainMode === 'bounce' || bb_mainMode === 'chaos') {
             let num = 1 + Math.floor(Math.random() * 3); 
             let lengths = [15, 20, 25, 30, 35];
             for(let i=0; i<num; i++) {
-                // Hindernisse nutzen dynamische Breite
-                let cx = logicWidth_bb * 0.3 + Math.random() * (logicWidth_bb * 0.5);
+                let cx = 60 + Math.random() * 110;
                 let cy = 20 + Math.random() * 60;
                 let angle = Math.random() * Math.PI;
                 let len = lengths[Math.floor(Math.random() * lengths.length)];
@@ -531,8 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bb_targetActive = true; bb_isGameOver = false; mathShotDone_Bach = false; isScrubbing_Bach = false;
         document.getElementById('timelineContainer').classList.add('hidden');
         
-        // Ziel spawnt im dynamischen Logik-Breitenbereich (40 Einheiten Rand fixiert links/rechts)
-        target_Bach.x = 40 + Math.random() * (logicWidth_bb - 80); 
+        target_Bach.x = 40 + Math.random() * 150; 
         target_Bach.y = 10 + Math.random() * 90;
 
         if (bb_mainMode === 'scharfschuetze') target_Bach.radius = Math.max(1.5, 5 - (bb_stage - 1) * 0.4); 
@@ -575,7 +549,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let inputY_Bach = parseFloat(document.getElementById("vecY").value);
         if (isNaN(inputX_bb)) inputX_bb = 0; if (isNaN(inputY_Bach)) inputY_Bach = 0;
         
-        // Physik-Radius visuell skalieren (logische Einheiten bleiben v5 standard)
         let projRadius = bb_activeVisualMode === 'tank' ? 1.2 : 2.5; 
         bb_projectile = { x: originObj_Bach.x, y: originObj_Bach.y, vx: inputX_bb, vy: inputY_Bach, radius: projRadius, trail: [], length: 4, width: 1.5, t:0, tpCool:0 };
         
@@ -650,10 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (hW) { if (bb_shotsLeft === 2) pE_Bach = 10; else if (bb_shotsLeft === 1) pE_Bach = 5; else pE_Bach = 2; }
                 else { if (bb_shotsLeft === 2) pE_Bach = 5; else if (bb_shotsLeft === 1) pE_Bach = 3; else pE_Bach = 1; }
                 
-                // Add Portal Bonus BEFORE multiplier
                 pE_Bach += bb_portalBonus;
-                
-                // Multiplier
                 if (bb_bounceCount > 0) pE_Bach *= Math.pow(2, bb_bounceCount);
             }
             
@@ -709,7 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 bb_projectile.x = other.x; bb_projectile.y = other.y;
                 bb_projectile.tpCool = 0.5; 
                 didTeleport_Bach = true; 
-                bb_portalBonus += 5; // V5 Bonus!
+                bb_portalBonus += 5; 
             }
         }
 
@@ -732,8 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (document.getElementById("bounceToggle").checked && !didTeleport_Bach) {
-            // Logische Grenzen nutzen dynamische Breite
-            let rW_bb = logicWidth_bb, tW_Bach = logicHeight_Bach; 
+            let rW_bb = (canvas_bb.width - originX_Bach) / scale_bb, tW_Bach = originY_Bach / scale_bb;                    
             if (bb_projectile.x > rW_bb) { bb_projectile.x = rW_bb; bb_projectile.vx *= -0.8; bb_bounceCount++; logMathBounce_bb('x'); }
             if (bb_projectile.x < 0)  { bb_projectile.x = 0;  bb_projectile.vx *= -0.8; bb_bounceCount++; logMathBounce_bb('x'); }
             if (bb_projectile.y > tW_Bach) { bb_projectile.y = tW_Bach;  bb_projectile.vy *= -0.8; bb_bounceCount++; logMathBounce_bb('y'); }
@@ -747,8 +716,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        // Randprüfung (nutzt dynamische Breite)
-        if (bb_projectile.y <= 0 || bb_projectile.x > logicWidth_bb + 20 || bb_projectile.x < -20) {
+        let rW_bb = (canvas_bb.width - originX_Bach) / scale_bb;
+        if (bb_projectile.y <= 0 || bb_projectile.x > rW_bb + 20 || bb_projectile.x < -20) {
             if (bb_projectile.y < 0) bb_projectile.y = 0; 
             trajectoryHistory_bb.push({ x: bb_projectile.x, y: bb_projectile.y, vx: bb_projectile.vx, vy: bb_projectile.vy, t: bb_projectile.t });
             endShot_bb(false); return;
@@ -756,33 +725,20 @@ document.addEventListener("DOMContentLoaded", () => {
         draw_bb(); animationId_Bach = requestAnimationFrame(update_Bach);
     }
 
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+        ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
+        if (fill) ctx.fill(); if (stroke) ctx.stroke();
+    }
+
     function drawGrid_Bach() {
         ctx_Bach.font = "12px Arial";
+        let mX = Math.floor((canvas_bb.width - originX_Bach) / scale_bb), mY = Math.floor(originY_Bach / scale_bb);
         let isLight = (bb_mainMode === 'mathe' && bb_subMode === 'basketball');
         let gridColor = isLight ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.2)";
         let axisColor = isLight ? "#555" : "#7f8c8d";
         
-        // X-Achsen Raster (dynamische Breite)
-        for(let x = 0; x <= logicWidth_bb; x += 10) { 
-            ctx_Bach.beginPath(); 
-            ctx_Bach.moveTo(cX(x), 0); ctx_Bach.lineTo(cX(x), canvas_bb.height); 
-            ctx_Bach.strokeStyle = x === 0 ? axisColor : gridColor; 
-            ctx_Bach.lineWidth = x === 0 ? 2 : 0.5; 
-            ctx_Bach.stroke(); 
-            
-            // Text nur alle 50 Einheiten für Lesbarkeit auf großen Screens
-            if (x > 0 && x % 50 === 0) { ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText(x, cX(x) - 10, cY(0) + 15); } 
-        }
-        
-        // Y-Achsen Raster (Fixe Höhe 550)
-        for(let y = 0; y <= logicHeight_Bach; y += 10) { 
-            ctx_Bach.beginPath(); 
-            ctx_Bach.moveTo(0, cY(y)); ctx_Bach.lineTo(canvas_bb.width, cY(y)); 
-            ctx_Bach.strokeStyle = y === 0 ? axisColor : gridColor; 
-            ctx_Bach.lineWidth = y === 0 ? 2 : 0.5; 
-            ctx_Bach.stroke(); 
-            if (y > 0 && y % 50 === 0) { ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText(y, cX(0) - 25, cY(y) + 4); } 
-        }
+        for(let x = 0; x <= mX; x += 10) { ctx_Bach.beginPath(); ctx_Bach.moveTo(cX(x), 0); ctx_Bach.lineTo(cX(x), canvas_bb.height); ctx_Bach.strokeStyle = x === 0 ? axisColor : gridColor; ctx_Bach.lineWidth = x === 0 ? 2 : 0.5; ctx_Bach.stroke(); if (x > 0) { ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText(x, cX(x) - 8, cY(0) + 15); } }
+        for(let y = 0; y <= mY; y += 10) { ctx_Bach.beginPath(); ctx_Bach.moveTo(0, cY(y)); ctx_Bach.lineTo(canvas_bb.width, cY(y)); ctx_Bach.strokeStyle = y === 0 ? axisColor : gridColor; ctx_Bach.lineWidth = y === 0 ? 2 : 0.5; ctx_Bach.stroke(); if (y > 0) { ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText(y, cX(0) - 25, cY(y) + 4); } }
         ctx_Bach.fillStyle = axisColor; ctx_Bach.fillText("0", cX(0) - 15, cY(0) + 15); ctx_Bach.fillText("X", canvas_bb.width - 15, cY(0) - 5); ctx_Bach.fillText("Y", cX(0) + 5, 15);
     }
 
@@ -846,21 +802,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
-        ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
-        if (fill) ctx.fill(); if (stroke) ctx.stroke();
-    }
-
     function draw_bb(fromHistory = false) {
         ctx_Bach.clearRect(0, 0, canvas_bb.width, canvas_bb.height);
-        
-        // Hintergrundfarbe setzen
-        let theme = themes_bb[bb_mainMode + '_' + bb_subMode] || themes_bb['classic_tank'];
-        if(['challenge','deathrun','scharfschuetze','chaos'].includes(bb_mainMode) && bb_subMode === 'mix') theme = themes_bb[bb_mainMode + '_' + bb_activeVisualMode];
-        // CSS Variable aktualisieren, aber auch Canvas direkt füllen, falls CSS Skalierung nicht pixelgenau
-        ctx_Bach.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim(); 
-        ctx_Bach.fillRect(0, 0, canvas_bb.width, canvas_bb.height);
-        
         drawGrid_Bach(); drawV5Objects_bb();
 
         let stageTxt_Bach = (['classic','wurmloch','bounce','mathe'].includes(bb_mainMode)) ? `Stufe: ${bb_stage}` : `Stage: ${bb_stage}`;
@@ -918,10 +861,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (bb_activeVisualMode === 'tank') { 
             let tX = cX(originObj_Bach.x), tY = cY(originObj_Bach.y), sW = scale_bb;
-            let currentTheme = themes_bb[bb_mainMode + '_' + bb_subMode] || themes_bb['classic_tank'];
-            if(['challenge','deathrun','scharfschuetze','chaos'].includes(bb_mainMode) && bb_subMode === 'mix') currentTheme = themes_bb[bb_mainMode + '_' + bb_activeVisualMode];
-            
-            let colDark = currentTheme.tankDark || "#4B5320"; let colLight = currentTheme.tankLight || "#556B2F"; let colTrack = currentTheme.track || "#36454F";
+            let theme = themes_bb[bb_mainMode + '_' + bb_subMode] || themes_bb['classic_tank'];
+            if(['challenge','deathrun','scharfschuetze','chaos'].includes(bb_mainMode) && bb_subMode === 'mix') theme = themes_bb[bb_mainMode+'_tank'];
+            let colDark = theme.tankDark || "#4B5320"; let colLight = theme.tankLight || "#556B2F"; let colTrack = theme.track || "#36454F";
             ctx_Bach.save();
             let lcWidth = 13 * sW, lcHeight = 3 * sW;
             let lcX = tX - lcWidth * 0.45, lcY = tY + 4 * sW * 0.3; let lcRadius = lcHeight / 2;
@@ -1006,12 +948,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx_Bach.save(); ctx_Bach.fillStyle = "rgba(127, 140, 141, 0.5)"; ctx_Bach.font = "10px Arial"; ctx_Bach.textAlign = "right"; ctx_Bach.textBaseline = "bottom"; ctx_Bach.fillText("dev by BB", canvas_bb.width - 10, canvas_bb.height - 10); ctx_Bach.restore();
     }
 
-    // -- RESIZE EVENT BINDEN --
-    window.addEventListener('resize', bb_resizeCanvas_Bach);
-    
-    // Initialen Resize aufrufen, um alles korrekt zu setzen
-    bb_resizeCanvas_Bach();
-    
     setMainMode_bb('classic');
 });
 </script>
